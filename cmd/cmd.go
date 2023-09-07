@@ -32,6 +32,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"reflect"
 
 	"github.com/urfave/cli/v2"
 )
@@ -55,9 +56,18 @@ var (
 )
 
 func cmdAction(ctx *cli.Context) error {
-	fmt.Println("The Args Count:", ctx.NArg())
-	fmt.Println("args-0:", ctx.Args().Get(0))
-	fmt.Println("args-Methon:", cmdOpts.Method, cmdOpts)
+	// fmt.Println("The Args Count:", ctx.NArg())
+	// fmt.Println("args-0:", ctx.Args().Get(0))
+
+	// fetch cmdOpts options
+	keys := getTypeKeys(cmdOpts)
+	ref := reflect.ValueOf(&cmdOpts).Elem()
+	for _, key := range keys {
+		val := ref.FieldByName(key)
+		fmt.Println(key, ":", val)
+	}
+
+	//fmt.Println("args-Methon:", cmdOpts.Method, cmdOpts)
 
 	// // get keys
 	// fmt.Println("get keys: ", getTypeDesc(cmdOpts))
@@ -82,12 +92,9 @@ func (cmd *Cmd) Run() {
 	// cmd.app.Commands = cmds
 
 	desc := getTypeDesc(&cmdOpts)
-	// cmd.app.Flags =
 	flags := typeDescToCmdFlags(cmdOpts, desc)
-	//fmt.Println(flags)
 	cmd.app.Flags = flags
 
-	fmt.Println("get OsArgs: ", os.Args)
 	if err := cmd.app.Run(os.Args); err != nil {
 		log.Fatal(err)
 	}
